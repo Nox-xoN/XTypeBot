@@ -23,7 +23,7 @@ class Draw {
         canContext.rect(lHitbox.x, lHitbox.y, lHitbox.width, lHitbox.height);
         canContext.stroke();
 
-        for(var i = 0; i < lHitboxes.length; i++ ){
+        for(var i = 0; i < projectiles.length; i++ ){
             canContext.beginPath();
             canContext.rect(lHitboxes[i].x, lHitboxes[i].y, lHitboxes[i].width, lHitboxes[i].height);
             canContext.stroke();
@@ -49,18 +49,27 @@ class Draw {
     }
 }
 
+function filterList(){
+    var c = 0
+    for (var i = 5; i < ig.game.entities.length; i++){
+        if(ig.game.entities[i].hasOwnProperty("image") == true){
+            if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
+                projectiles[c] = ig.game.entities[i];
+                c++
+            }
+        }
+    }
+}
+
+
 class Maths {
     static getClosest() {
         var closest = ig.game.heart;
-        for (var i = 1; i < ig.game.entities.length; i++) {
-            if (ig.game.entities[i].image != undefined) {
-                if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
-                    if(ig.game.entities[i].pos.y < player.y +2)
-                        if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(ig.game.entities[i])) {
-                            closest = ig.game.entities[i];
-                        }
+        for (var i = 1; i < projectiles.length; i++) {
+            if(ig.game.entities[i].pos.y < player.y +2)
+                if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(ig.game.entities[i])) {
+                    closest = ig.game.entities[i];
                 }
-            }
         }
         return closest;
     }
@@ -72,7 +81,7 @@ class Player {
         this.y;
         this.width;
         this.height;
-        this.pHitbox = new lHitbox(this.x, this.y, 50, 50);
+        this.pHitbox = new lHitbox(this.x, this.y, 65, 65);
     }
 
     update() {
@@ -124,7 +133,6 @@ function autoclick() {
     player.shoot();
 }
 
-
 class lHitbox {
     constructor(x, y, width, height) {
         this.x = x;
@@ -143,26 +151,29 @@ class lHitbox {
 }
 
 function setup(){
-    for (var i = 0; i < ig.game.entities.length; i++){
-        var x = ig.game.entities[i].pos.x;
-        var y = ig.game.entities[i].pos.y;
-        var width = ig.game.entities[i].size.x;
-        var height = ig.game.entities[i].size.y;
+    for (var i = 0; i < projectiles.length; i++){
+        var x = projectiles[i].pos.x;
+        var y = projectiles[i].pos.y;
+        var width = projectiles[i].size.x;
+        var height = projectiles[i].size.y;
         lHitboxes[i] = new lHitbox(x, y, width, height);
     }
 }
 
+
 function main() {
+    filterList();
     setup();
     player.update();
     player.dodge();
     aimbot();
 }
 
+let projectiles = []
 let lHitboxes = []
 let player = new Player();
 
-var aClickCall = setInterval(autoclick, 50);
+//var aClickCall = setInterval(autoclick, 50);
 var mCall = setInterval(main, 10);
 
 ig.music.volume = 0
