@@ -160,7 +160,6 @@ function setup(){
     }
 }
 
-
 function main() {
     filterList();
     setup();
