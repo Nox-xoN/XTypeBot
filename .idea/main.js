@@ -15,7 +15,7 @@ canvas.style.bottom = "0"
 
 var gameObjs = new Array(2500);
 var bulletObjs = new Array(500);
-//
+//pppp
 
 class ContainerHlpr {
     getBulletObjects() {
