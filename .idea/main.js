@@ -23,6 +23,16 @@ class Draw {
         canContext.rect(lHitbox.x, lHitbox.y, lHitbox.width, lHitbox.height);
         canContext.stroke();
 
+        for(var i = 0; i < lHitboxes.length; i++ ){
+            canContext.beginPath();
+            canContext.rect(lHitboxes[i].x, lHitboxes[i].y, lHitboxes[i].width, lHitboxes[i].height);
+            canContext.stroke();
+        }
+
+        canContext.beginPath();
+        canContext.rect(225, 645, 30, 10);
+        canContext.stroke();
+
         try {
             canContext.beginPath();
             canContext.moveTo(Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2), Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2));
@@ -88,11 +98,11 @@ class Player {
                 ig.game.player.pos.x = this.x - 1
             }
         } else {
-            if(this.x > 480/2 + 5 )
+            if(this.x > 480/2 + 15 )
             {
                 ig.game.player.pos.x = this.x - 0.5;
             }
-            else if(this.x < 480/2 - 5)
+            else if(this.x < 480/2 - 15)
             {
                 ig.game.player.pos.x = this.x + 0.5;
             }
@@ -118,7 +128,23 @@ class lHitbox {
     }
 }
 
-var player = new Player();
+var lHitboxes = []
+
+function setup(){
+    for (var i = 0; i < ig.game.entities.length; i++){
+        if (ig.game.entities[i].image !== undefined || ig.game.entities[i].image !== null) {
+            if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
+                var x = ig.game.entities[i].pos.x;
+                var y = ig.game.entities[i].pos.y;
+                var height = ig.game.entities[i].size.x;
+                var width = ig.game.entities[i].size.y;
+                lHitboxes[i] = new lHitbox(x, y, height, width);
+            }
+        }
+    }
+}
+
+let player = new Player();
 
 
 var aClickCall = setInterval(autoclick, 50);
@@ -140,6 +166,7 @@ function autoclick() {
 var mCall = setInterval(main, 10);
 
 function main() {
+    setup();
     player.update();
     player.dodge();
     aimbot();
