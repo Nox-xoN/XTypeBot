@@ -66,9 +66,9 @@ class Maths {
     static getClosest() {
         var closest = ig.game.heart;
         for (var i = 1; i < projectiles.length; i++) {
-            if(ig.game.entities[i].pos.y < player.y +2)
-                if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(ig.game.entities[i])) {
-                    closest = ig.game.entities[i];
+            if(projectiles[i].pos.y < player.y +2)
+                if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(projectiles[i])) {
+                    closest = projectiles[i];
                 }
         }
         return closest;
@@ -150,7 +150,7 @@ class lHitbox {
     }
 }
 
-function setup(){
+function bHitbox(){
     for (var i = 0; i < projectiles.length; i++){
         var x = projectiles[i].pos.x;
         var y = projectiles[i].pos.y;
@@ -162,7 +162,7 @@ function setup(){
 
 function main() {
     filterList();
-    setup();
+    bHitbox();
     player.update();
     player.dodge();
     aimbot();
@@ -172,7 +172,7 @@ let projectiles = []
 let lHitboxes = []
 let player = new Player();
 
-//var aClickCall = setInterval(autoclick, 50);
+var aClickCall = setInterval(autoclick, 50);
 var mCall = setInterval(main, 10);
 
 ig.music.volume = 0
