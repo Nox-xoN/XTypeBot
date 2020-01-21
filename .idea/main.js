@@ -15,7 +15,7 @@ canvas.style.bottom = "0"
 
 var gameObjs = new Array(2500);
 var bulletObjs = new Array(500);
-//pppp
+
 
 class ContainerHlpr {
     getBulletObjects() {
@@ -251,6 +251,5 @@ function main() {
     player.dodge();
 }
 
-var mCall = setInterval(main, 10);
-
-
+ig.music.volume = 0
+ig.Sound.enabled = false
