@@ -110,45 +110,6 @@ class Player {
     }
 }
 
-
-class lHitbox {
-    constructor(x, y, height, width) {
-        this.height = height;
-        this.width = width;
-        this.x = x;
-        this.y = y;
-        this.draw = new Draw();
-    }
-
-    update(player) {
-        this.x = player.x - (this.width / 2) + player.width;
-        this.y = player.y - (this.height / 2) + player.height;
-
-        this.draw.update(this);
-    }
-}
-
-var lHitboxes = []
-
-function setup(){
-    for (var i = 0; i < ig.game.entities.length; i++){
-        if (ig.game.entities[i].image !== undefined || ig.game.entities[i].image !== null) {
-            if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
-                var x = ig.game.entities[i].pos.x;
-                var y = ig.game.entities[i].pos.y;
-                var height = ig.game.entities[i].size.x;
-                var width = ig.game.entities[i].size.y;
-                lHitboxes[i] = new lHitbox(x, y, height, width);
-            }
-        }
-    }
-}
-
-let player = new Player();
-
-
-var aClickCall = setInterval(autoclick, 50);
-
 function aimbot() {
     if(Maths.getClosest().image.path == ["media/sprites/bullet.png"] && ig.game.player.distanceTo(Maths.getClosest()) < 50){
         ig.input.mouse.x = Maths.getClosest().pos.x + (Maths.getClosest().size.x /2);
@@ -163,7 +124,33 @@ function autoclick() {
     player.shoot();
 }
 
-var mCall = setInterval(main, 10);
+
+class lHitbox {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.draw = new Draw();
+    }
+
+    update(player) {
+        this.x = player.x - (this.width / 2) + player.width;
+        this.y = player.y - (this.height / 2) + player.height;
+
+        this.draw.update(this);
+    }
+}
+
+function setup(){
+    for (var i = 0; i < ig.game.entities.length; i++){
+        var x = ig.game.entities[i].pos.x;
+        var y = ig.game.entities[i].pos.y;
+        var width = ig.game.entities[i].size.x;
+        var height = ig.game.entities[i].size.y;
+        lHitboxes[i] = new lHitbox(x, y, width, height);
+    }
+}
 
 function main() {
     setup();
@@ -171,6 +158,12 @@ function main() {
     player.dodge();
     aimbot();
 }
+
+let lHitboxes = []
+let player = new Player();
+
+var aClickCall = setInterval(autoclick, 50);
+var mCall = setInterval(main, 10);
 
 ig.music.volume = 0
 ig.Sound.enabled = false
