@@ -23,6 +23,12 @@ class Draw {
         canContext.rect(lHitbox.x, lHitbox.y, lHitbox.width, lHitbox.height);
         canContext.stroke();
 
+        for(var i = 0; i < projectiles.length; i++ ){
+            canContext.beginPath();
+            canContext.rect(lHitboxes[i].x, lHitboxes[i].y, lHitboxes[i].width, lHitboxes[i].height);
+            canContext.stroke();
+        }
+
         try {
             canContext.beginPath();
             canContext.moveTo(Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2), Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2));
@@ -39,18 +45,27 @@ class Draw {
     }
 }
 
+function filterList(){
+    var c = 0
+    for (var i = 5; i < ig.game.entities.length; i++){
+        if(ig.game.entities[i].hasOwnProperty("image") == true){
+            if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
+                projectiles[c] = ig.game.entities[i];
+                c++
+            }
+        }
+    }
+}
+
+
 class Maths {
     static getClosest() {
         var closest = ig.game.heart;
-        for (var i = 1; i < ig.game.entities.length; i++) {
-            if (ig.game.entities[i].image != undefined) {
-                if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
-                    if(ig.game.entities[i].pos.y < player.y +2)
-                        if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(ig.game.entities[i])) {
-                            closest = ig.game.entities[i];
-                        }
+        for (var i = 1; i < projectiles.length; i++) {
+            if(projectiles[i].pos.y < player.y +2)
+                if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(projectiles[i])) {
+                    closest = projectiles[i];
                 }
-            }
         }
         return closest;
     }
@@ -62,7 +77,7 @@ class Player {
         this.y;
         this.width;
         this.height;
-        this.pHitbox = new lHitbox(this.x, this.y, 50, 50);
+        this.pHitbox = new lHitbox(this.x, this.y, 65, 65);
     }
 
     update() {
@@ -88,40 +103,17 @@ class Player {
                 ig.game.player.pos.x = this.x - 1
             }
         } else {
-            if(this.x > 480/2 + 5 )
+            if(this.x > 480/2 + 15 )
             {
                 ig.game.player.pos.x = this.x - 0.5;
             }
-            else if(this.x < 480/2 - 5)
+            else if(this.x < 480/2 - 15)
             {
                 ig.game.player.pos.x = this.x + 0.5;
             }
         }
     }
 }
-
-
-class lHitbox {
-    constructor(x, y, height, width) {
-        this.height = height;
-        this.width = width;
-        this.x = x;
-        this.y = y;
-        this.draw = new Draw();
-    }
-
-    update(player) {
-        this.x = player.x - (this.width / 2) + player.width;
-        this.y = player.y - (this.height / 2) + player.height;
-
-        this.draw.update(this);
-    }
-}
-
-var player = new Player();
-
-
-var aClickCall = setInterval(autoclick, 50);
 
 function aimbot() {
     if(Maths.getClosest().image.path == ["media/sprites/bullet.png"] && ig.game.player.distanceTo(Maths.getClosest()) < 50){
@@ -137,13 +129,56 @@ function autoclick() {
     player.shoot();
 }
 
-var mCall = setInterval(main, 10);
+class lHitbox {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.draw = new Draw();
+    }
+
+    update(player) {
+        this.x = player.x - (this.width / 2) + player.width;
+        this.y = player.y - (this.height / 2) + player.height;
+
+        this.draw.update(this);
+    }
+}
+
+function bHitbox(){
+    for (var i = 0; i < projectiles.length; i++){
+        var x = projectiles[i].pos.x;
+        var y = projectiles[i].pos.y;
+        var width = projectiles[i].size.x;
+        var height = projectiles[i].size.y;
+        lHitboxes[i] = new lHitbox(x, y, width, height);
+    }
+}
 
 function main() {
+    projectilesClenup();
+    filterList();
+    bHitbox();
     player.update();
     player.dodge();
     aimbot();
 }
 
-ig.music.volume = 0
-ig.Sound.enabled = false
+let projectiles = []
+let lHitboxes = []
+let player = new Player();
+
+//var aClickCall = setInterval(autoclick, 50);
+var mCall = setInterval(main, 10);
+
+ig.music.volume = 0;
+ig.Sound.enabled = false;
+
+function projectilesClenup(){
+    for(var i = 0; i < projectiles.length; i++){
+        if(projectiles[i].pos.x <= 0 || projectiles[i].pos.x <= 480 || projectiles[i].pos.y <= 0 || projectiles[i].pos.y <= 720){
+            projectiles.splice([i],1);
+        }
+    }
+}
