@@ -29,10 +29,6 @@ class Draw {
             canContext.stroke();
         }
 
-        canContext.beginPath();
-        canContext.rect(225, 645, 30, 10);
-        canContext.stroke();
-
         try {
             canContext.beginPath();
             canContext.moveTo(Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2), Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2));
@@ -161,6 +157,7 @@ function bHitbox(){
 }
 
 function main() {
+    projectilesClenup();
     filterList();
     bHitbox();
     player.update();
@@ -172,8 +169,16 @@ let projectiles = []
 let lHitboxes = []
 let player = new Player();
 
-var aClickCall = setInterval(autoclick, 50);
+//var aClickCall = setInterval(autoclick, 50);
 var mCall = setInterval(main, 10);
 
-ig.music.volume = 0
-ig.Sound.enabled = false
+ig.music.volume = 0;
+ig.Sound.enabled = false;
+
+function projectilesClenup(){
+    for(var i = 0; i < projectiles.length; i++){
+        if(projectiles[i].pos.x <= 0 || projectiles[i].pos.x <= 480 || projectiles[i].pos.y <= 0 || projectiles[i].pos.y <= 720){
+            projectiles.splice([i],1);
+        }
+    }
+}
