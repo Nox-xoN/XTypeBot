@@ -251,4 +251,6 @@ function main() {
     player.dodge();
 }
 
+var mCall = setInterval(main, 10);
+
 
