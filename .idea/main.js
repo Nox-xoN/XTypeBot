@@ -19,6 +19,9 @@ class Draw {
 
     vHitbox(lHitbox) {
         canContext.clearRect(0, 0, canvas.width, canvas.height); //löscht den canvas
+        canContext.font = "11px Arial";
+        canContext.fillText("Level:" + ig.game.level.level, 10, 700);
+
         canContext.beginPath();
         canContext.rect(lHitbox.x, lHitbox.y, lHitbox.width, lHitbox.height);
         canContext.stroke();
@@ -46,28 +49,40 @@ class Draw {
 }
 
 function filterList(){
-    var c = 0
+    var c = 0;
+    var d = 1;
     for (var i = 5; i < ig.game.entities.length; i++){
         if(ig.game.entities[i].hasOwnProperty("image") == true){
             if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
                 projectiles[c] = ig.game.entities[i];
-                c++
+                c++;
+            }
+            if (ig.game.entities[i].image.path == ["media/sprites/heart.png"] || ig.game.entities[i].image.path == ["media/sprites/plasmabox.png"]) {
+                bossParts[d] = ig.game.entities[i];
+                d++;
             }
         }
     }
 }
 
-
 class Maths {
     static getClosest() {
-        var closest = ig.game.heart;
-        for (var i = 1; i < projectiles.length; i++) {
+        var closest = bossParts[0];
+        for (var i = 0; i < projectiles.length; i++) {
             if(projectiles[i].pos.y < player.y +2)
                 if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(projectiles[i])) {
                     closest = projectiles[i];
                 }
         }
         return closest;
+    }
+}
+
+function projectilesClenup(){
+    for(var i = 0; i < projectiles.length; i++){
+        if(projectiles[i].pos.x <= 0 || projectiles[i].pos.x <= 480 || projectiles[i].pos.y <= 0 || projectiles[i].pos.y <= 720){
+            projectiles.splice([i],1);
+        }
     }
 }
 
@@ -94,7 +109,7 @@ class Player {
 
     dodge()
     {
-        if(Maths.getClosest().pos.x > this.pHitbox.x && Maths.getClosest().pos.x < this.pHitbox.x + this.pHitbox.width && Maths.getClosest().pos.y > this.pHitbox.y && Maths.getClosest().pos.y < this.pHitbox.y + this.pHitbox.height)
+        if(Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2) > this.pHitbox.x && Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2) < this.pHitbox.x + this.pHitbox.width && Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2) > this.pHitbox.y && Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2) < this.pHitbox.y + this.pHitbox.height)
         {
             if(Maths.getClosest().pos.x < this.x)
             {
@@ -165,20 +180,29 @@ function main() {
     aimbot();
 }
 
-let projectiles = []
-let lHitboxes = []
+let projectiles = [];
+let bossParts= []
+let lHitboxes = [];
 let player = new Player();
 
-//var aClickCall = setInterval(autoclick, 50);
+var aClickCall = setInterval(autoclick, 50);
 var mCall = setInterval(main, 10);
 
 ig.music.volume = 0;
 ig.Sound.enabled = false;
 
-function projectilesClenup(){
-    for(var i = 0; i < projectiles.length; i++){
-        if(projectiles[i].pos.x <= 0 || projectiles[i].pos.x <= 480 || projectiles[i].pos.y <= 0 || projectiles[i].pos.y <= 720){
-            projectiles.splice([i],1);
-        }
+// function distanceTo (other){
+//     var xd = (this.x + this.width / 2) - (other.x + other.width / 2);
+//     var yd = (this.y + this.height / 2) - (other.y + other.height / 2);
+//     return Math.sqrt(xd * xd + yd * yd);
+//}
+
+
+class Dummy {
+    constructor(pos,size, image) {
+        this.pos = {x:240,y:0};
+        this.size = {x:1,y:1};
+        this.image = {path:"media/sprites/plasmabox.png"};
     }
 }
+bossParts[0] = new Dummy();
