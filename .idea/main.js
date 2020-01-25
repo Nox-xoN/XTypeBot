@@ -13,116 +13,35 @@ canvas.style.display = "block"
 canvas.style.border = "1px solid #555"
 canvas.style.bottom = "0"
 
-var gameObjs = new Array(2500);
-var bulletObjs = new Array(500);
-
-
-class ContainerHlpr {
-    getBulletObjects() {
-        ArrHlpr.clearArr(bulletObjs);
-        for (var i = 0; i < gameObjs.length; i++) {
-            try {
-                if (gameObjs[i].image != undefined) {
-                    if (gameObjs[i].size.x == 8 && gameObjs[i].size.y == 8) {
-                        bulletObjs[i] = new Bullet(ig.game.entities[i].pos.x, ig.game.entities[i].pos.y, ig.game.entities[i].size.x, ig.game.entities[i].size.y);
-                    } else if (gameObjs[i].size.x == 16 && gameObjs[i].size.y == 16) {
-                        bulletObjs[i] = new Bullet(ig.game.entities[i].pos.x, ig.game.entities[i].pos.y, ig.game.entities[i].size.x, ig.game.entities[i].size.y);
-                    }
-                }
-            } catch (err) {
-            }
-        }
-        //ArrHlpr.tidyupArr(bulletObjs);
-    }
-
-    refreshGameObjects() {
-        ArrHlpr.clearArr(gameObjs);
-        //var gameObjects = new Array(ig.game.entities.length);
-        for (var i = 0; i < ig.game.entities.length; i++) {
-            gameObjs[i] = ig.game.entities[i];
-        }
-        this.getBulletObjects()
-    }
-}
-
-class ArrHlpr {
-    static clearArr(arr) {
-        for (var i = 0; i < arr.length; i++) {
-            arr[i] = null;
-        }
-        return arr;
-    }
-
-    static addElement(arr, el) {
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i] == null) {
-                arr[i] = el;
-            }
-        }
-        return arr;
-    }
-
-    static removeElement(arr, el) {
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i] == el) {
-                null;
-            }
-        }
-        return arr;
-    }
-
-    static getFreeElements(arr) {
-        var empty = 0;
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i] == null) {
-                empty++;
-            }
-        }
-        return empty;
-    }
-
-    static getFullElements(arr) {
-        var Full = 0;
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i] != null) {
-                Full++;
-            }
-        }
-        return Full;
-    }
-
-    static tidyupArr(arr) {
-        for (var i = 0; i < arr.length; i++) {
-            var lastEmpty = 0;
-            var nextFull = 0;
-            if (arr[i] == null) {
-                lastEmpty = i;
-                for (var j = i; j < arr.length; j++) {
-                    if (arr[j] != null) {
-                        nextFull = j;
-                        break;
-                    }
-                }
-                if (lastEmpty != nextFull)
-                    arr[lastEmpty] == arr[nextFull];
-                arr[j] = null;
-            }
-        }
-        return arr;
-    }
-}
-
 class Draw {
+    Draw() {
+    }
+
     vHitbox(lHitbox) {
         canContext.clearRect(0, 0, canvas.width, canvas.height); //löscht den canvas
+        canContext.font = "15px Arial";
+        canContext.fillText("Level:" + ig.game.level.level, 10, 690);
+        canContext.fillText("Lives:" + ig.game.lives, 10, 705);
+
         canContext.beginPath();
         canContext.rect(lHitbox.x, lHitbox.y, lHitbox.width, lHitbox.height);
         canContext.stroke();
 
-        canContext.beginPath();
-        canContext.moveTo(Maths.getClosest().pos.x, Maths.getClosest().pos.y);
-        canContext.lineTo(player.x, player.y);
-        canContext.stroke();
+        for(var i = 0; i < projectiles.length; i++ ){
+            canContext.beginPath();
+            canContext.rect(lHitboxes[i].x, lHitboxes[i].y, lHitboxes[i].width, lHitboxes[i].height);
+            canContext.stroke();
+        }
+
+        try {
+            canContext.beginPath();
+            canContext.moveTo(Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2), Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2));
+            canContext.lineTo(player.x, player.y);
+            canContext.stroke();
+        }
+        catch(err) {
+        }
+
     }
 
     update(lHitbox) {
@@ -130,19 +49,46 @@ class Draw {
     }
 }
 
-class Maths {
-    static getClosest() {
-        var closest = ig.game.heart;
-        for (var i = 1; i < ig.game.entities.length; i++) {
-            if (ig.game.entities[i].image != undefined) {
-                if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
-                    if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(ig.game.entities[i])) {
-                        closest = ig.game.entities[i];
-                    }
-                }
+function filterList(){
+    var c = 0;
+    var d = 0;
+    for (var i = 0; i < ig.game.entities.length; i++){
+        if(ig.game.entities[i].hasOwnProperty("image") == true){
+            if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
+                projectiles[c] = ig.game.entities[i];
+                c++;
+            }
+            if (ig.game.entities[i].image.path == ["media/sprites/heart.png"] || ig.game.entities[i].image.path == ["media/sprites/plasmabox.png"]) {
+                bossParts[d] = ig.game.entities[i];
+                d++;
             }
         }
+    }
+}
+
+class Maths {
+    static getClosest() {
+        var closest = dummy[0];
+        for (var i = 0; i < projectiles.length; i++) {
+            if(projectiles[i].pos.y < player.y +2)
+                if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(projectiles[i])) {
+                    closest = projectiles[i];
+                }
+        }
         return closest;
+    }
+    static distanceTo (other){
+    var xd = (player.x + player.width / 2) - (other.pos.x + other.size.x / 2);
+    var yd = (player.y + player.height / 2) - (other.pos.y + other.size.y / 2);
+    return Math.sqrt(xd * xd + yd * yd);
+    }
+}
+
+function projectilesClenup(){
+    for(var i = 0; i < projectiles.length; i++){
+        if(projectiles[i].pos.x <= 0 || projectiles[i].pos.x <= 480 || projectiles[i].pos.y <= 0 || projectiles[i].pos.y <= 720){
+            projectiles.splice([i],1);
+        }
     }
 }
 
@@ -152,7 +98,7 @@ class Player {
         this.y;
         this.width;
         this.height;
-        this.pHitbox = new lHitbox(this.x, this.y, 75, 75);
+        this.pHitbox = new lHitbox(this.x, this.y, 65, 65);
     }
 
     update() {
@@ -167,54 +113,45 @@ class Player {
         ig.game.player.shoot();
     }
 
-    dodge() {
-        if (Maths.getClosest().pos.x > this.pHitbox.x && Maths.getClosest().pos.x < this.pHitbox.x + this.pHitbox.width && Maths.getClosest().pos.y > this.pHitbox.y && Maths.getClosest().pos.y < this.pHitbox.y + this.pHitbox.height) {
-            if (Maths.getClosest().pos.x < this.x) {
+    dodge()
+    {
+        if(Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2) > this.pHitbox.x && Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2) < this.pHitbox.x + this.pHitbox.width && Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2) > this.pHitbox.y && Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2) < this.pHitbox.y + this.pHitbox.height)
+        {
+            if(Maths.getClosest().pos.x < this.x)
+            {
                 ig.game.player.pos.x = this.x + 1
             } else {
                 ig.game.player.pos.x = this.x - 1
             }
         } else {
-            if (this.x > 480 / 2 + 5) {
-                ig.game.player.pos.x = this.x - 1;
-            } else if (this.x < 480 / 2 - 5) {
-                ig.game.player.pos.x = this.x + 1;
+            if(this.x > 480/2 + 15 )
+            {
+                ig.game.player.pos.x = this.x - 0.5;
+            }
+            else if(this.x < 480/2 - 15)
+            {
+                ig.game.player.pos.x = this.x + 0.5;
             }
         }
     }
 }
 
-class Bullet {
-    Bullet(x,y,width,height) {
-        this.height;
-        this.width;
-        this.x;
-        this.y;
-        this.bHitbox = new lHitbox();
-    }
-
-    draw() {
-        try {
-            this.bHitbox.update(this);
-        } catch (err) {
+function aimbot() {
+    // if(Maths.getClosest().image.path == ["media/sprites/bullet.png"] && ig.game.player.distanceTo(Maths.getClosest()) < 50){
+    //     ig.input.mouse.x = Maths.getClosest().pos.x + (Maths.getClosest().size.x /2);
+    //     ig.input.mouse.y = Maths.getClosest().pos.y + (Maths.getClosest().size.y /2);
+    // } else {
+    //     ig.input.mouse.x = ig.game.heart.last.x + (ig.game.heart.size.x /2);
+    //     ig.input.mouse.y = ig.game.heart.last.y + (ig.game.heart.size.y /2);
+    // }
+    for(var i = 0; i < bossParts.length; i++){
+        if(Maths.distanceTo(bossParts[i]) < Maths.distanceTo(bossParts[0])){
+            ig.input.mouse.x = bossParts[i].pos.x + (bossParts[i].size.x /2);
+            ig.input.mouse.y = bossParts[i].pos.y + (bossParts[i].size.y /2);
+        } else {
+            ig.input.mouse.x = bossParts[0].pos.x + (bossParts[0].size.x /2);
+            ig.input.mouse.y = bossParts[0].pos.y + (bossParts[0].size.y /2);
         }
-    }
-}
-
-class lHitbox {
-    constructor() {
-        this.height;
-        this.width;
-        this.x;
-        this.y;
-        this.draw = new Draw();
-    }
-
-    update(obj) {
-        this.x = obj.x - (this.width / 2) + obj.width;
-        this.y = obj.y - (this.height / 2) + obj.height;
-
-        this.draw.update(this);
     }
 }
 
@@ -222,34 +159,70 @@ function autoclick() {
     player.shoot();
 }
 
-var aClickCall = setInterval(autoclick, 50);
-
-function aimbot() {
-    ig.input.mouse.x = ig.game.heart.last.x + 34;
-    ig.input.mouse.y = ig.game.heart.last.y + 44;
-}
-
-
-var player = new Player();
-var cHlpr = new ContainerHlpr();
-
-function main() {
-    cHlpr.refreshGameObjects();
-    player.update();
-
-    for (var i = 0; i < bulletObjs.length; i++) {
-        try {
-            if (bulletObjs[i] != undefined)
-                bulletObjs[i].draw();
-        } catch (err) {
-
-        }
-
+class lHitbox {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.draw = new Draw();
     }
 
-    aimbot();
-    player.dodge();
+    update(player) {
+        this.x = player.x - (this.width / 2) + player.width;
+        this.y = player.y - (this.height / 2) + player.height;
+
+        this.draw.update(this);
+    }
 }
 
-ig.music.volume = 0
-ig.Sound.enabled = false
+function bHitbox(){
+    for (var i = 0; i < projectiles.length; i++){
+        var x = projectiles[i].pos.x;
+        var y = projectiles[i].pos.y;
+        var width = projectiles[i].size.x;
+        var height = projectiles[i].size.y;
+        lHitboxes[i] = new lHitbox(x, y, width, height);
+    }
+}
+
+function main() {
+    projectilesClenup();
+    filterList();
+    bHitbox();
+    player.update();
+    player.dodge();
+    aimbot();
+    bossClenup();
+}
+
+let projectiles = [];
+let bossParts= []
+let dummy = [];
+let lHitboxes = [];
+let player = new Player();
+
+var aClickCall = setInterval(autoclick, 50);
+var mCall = setInterval(main, 10);
+
+ig.music.volume = 0;
+ig.Sound.enabled = false;
+
+
+
+class Dummy {
+    constructor(pos,size, image) {
+        this.pos = {x:240,y:0};
+        this.size = {x:1,y:1};
+        this.image = {path:"media/sprites/pbullet.png"};
+    }
+}
+dummy[0] = new Dummy();
+
+function bossClenup(){
+    for(var i = 0; i < bossParts.length; i++){
+        if(bossParts[i]._killed){
+            bossParts.splice([i],1);
+        }
+    }
+}
