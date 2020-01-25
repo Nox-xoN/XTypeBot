@@ -19,6 +19,10 @@ class Draw {
 
     vHitbox(lHitbox) {
         canContext.clearRect(0, 0, canvas.width, canvas.height); //löscht den canvas
+        canContext.font = "15px Arial";
+        canContext.fillText("Level:" + ig.game.level.level, 10, 690);
+        canContext.fillText("Lives:" + ig.game.lives, 10, 705);
+
         canContext.beginPath();
         canContext.rect(lHitbox.x, lHitbox.y, lHitbox.width, lHitbox.height);
         canContext.stroke();
@@ -46,28 +50,45 @@ class Draw {
 }
 
 function filterList(){
-    var c = 0
-    for (var i = 5; i < ig.game.entities.length; i++){
+    var c = 0;
+    var d = 0;
+    for (var i = 0; i < ig.game.entities.length; i++){
         if(ig.game.entities[i].hasOwnProperty("image") == true){
             if (ig.game.entities[i].image.path == ["media/sprites/pbullet.png"] || ig.game.entities[i].image.path == ["media/sprites/bullet.png"]) {
                 projectiles[c] = ig.game.entities[i];
-                c++
+                c++;
+            }
+            if (ig.game.entities[i].image.path == ["media/sprites/heart.png"] || ig.game.entities[i].image.path == ["media/sprites/plasmabox.png"]) {
+                bossParts[d] = ig.game.entities[i];
+                d++;
             }
         }
     }
 }
 
-
 class Maths {
     static getClosest() {
-        var closest = ig.game.heart;
-        for (var i = 1; i < projectiles.length; i++) {
+        var closest = dummy[0];
+        for (var i = 0; i < projectiles.length; i++) {
             if(projectiles[i].pos.y < player.y +2)
                 if (ig.game.player.distanceTo(closest) > ig.game.player.distanceTo(projectiles[i])) {
                     closest = projectiles[i];
                 }
         }
         return closest;
+    }
+    static distanceTo (other){
+    var xd = (player.x + player.width / 2) - (other.pos.x + other.size.x / 2);
+    var yd = (player.y + player.height / 2) - (other.pos.y + other.size.y / 2);
+    return Math.sqrt(xd * xd + yd * yd);
+    }
+}
+
+function projectilesClenup(){
+    for(var i = 0; i < projectiles.length; i++){
+        if(projectiles[i].pos.x <= 0 || projectiles[i].pos.x <= 480 || projectiles[i].pos.y <= 0 || projectiles[i].pos.y <= 720){
+            projectiles.splice([i],1);
+        }
     }
 }
 
@@ -94,7 +115,7 @@ class Player {
 
     dodge()
     {
-        if(Maths.getClosest().pos.x > this.pHitbox.x && Maths.getClosest().pos.x < this.pHitbox.x + this.pHitbox.width && Maths.getClosest().pos.y > this.pHitbox.y && Maths.getClosest().pos.y < this.pHitbox.y + this.pHitbox.height)
+        if(Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2) > this.pHitbox.x && Maths.getClosest().pos.x + (Maths.getClosest().size.x / 2) < this.pHitbox.x + this.pHitbox.width && Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2) > this.pHitbox.y && Maths.getClosest().pos.y + (Maths.getClosest().size.y / 2) < this.pHitbox.y + this.pHitbox.height)
         {
             if(Maths.getClosest().pos.x < this.x)
             {
@@ -116,12 +137,21 @@ class Player {
 }
 
 function aimbot() {
-    if(Maths.getClosest().image.path == ["media/sprites/bullet.png"] && ig.game.player.distanceTo(Maths.getClosest()) < 50){
-        ig.input.mouse.x = Maths.getClosest().pos.x + (Maths.getClosest().size.x /2);
-        ig.input.mouse.y = Maths.getClosest().pos.y + (Maths.getClosest().size.y /2);
-    } else {
-        ig.input.mouse.x = ig.game.heart.last.x + (ig.game.heart.size.x /2);
-        ig.input.mouse.y = ig.game.heart.last.y + (ig.game.heart.size.y /2);
+    // if(Maths.getClosest().image.path == ["media/sprites/bullet.png"] && ig.game.player.distanceTo(Maths.getClosest()) < 50){
+    //     ig.input.mouse.x = Maths.getClosest().pos.x + (Maths.getClosest().size.x /2);
+    //     ig.input.mouse.y = Maths.getClosest().pos.y + (Maths.getClosest().size.y /2);
+    // } else {
+    //     ig.input.mouse.x = ig.game.heart.last.x + (ig.game.heart.size.x /2);
+    //     ig.input.mouse.y = ig.game.heart.last.y + (ig.game.heart.size.y /2);
+    // }
+    for(var i = 0; i < bossParts.length; i++){
+        if(Maths.distanceTo(bossParts[i]) < Maths.distanceTo(bossParts[0])){
+            ig.input.mouse.x = bossParts[i].pos.x + (bossParts[i].size.x /2);
+            ig.input.mouse.y = bossParts[i].pos.y + (bossParts[i].size.y /2);
+        } else {
+            ig.input.mouse.x = bossParts[0].pos.x + (bossParts[0].size.x /2);
+            ig.input.mouse.y = bossParts[0].pos.y + (bossParts[0].size.y /2);
+        }
     }
 }
 
@@ -163,22 +193,36 @@ function main() {
     player.update();
     player.dodge();
     aimbot();
+    bossClenup();
 }
 
-let projectiles = []
-let lHitboxes = []
+let projectiles = [];
+let bossParts= []
+let dummy = [];
+let lHitboxes = [];
 let player = new Player();
 
-//var aClickCall = setInterval(autoclick, 50);
+var aClickCall = setInterval(autoclick, 50);
 var mCall = setInterval(main, 10);
 
 ig.music.volume = 0;
 ig.Sound.enabled = false;
 
-function projectilesClenup(){
-    for(var i = 0; i < projectiles.length; i++){
-        if(projectiles[i].pos.x <= 0 || projectiles[i].pos.x <= 480 || projectiles[i].pos.y <= 0 || projectiles[i].pos.y <= 720){
-            projectiles.splice([i],1);
+
+
+class Dummy {
+    constructor(pos,size, image) {
+        this.pos = {x:240,y:0};
+        this.size = {x:1,y:1};
+        this.image = {path:"media/sprites/pbullet.png"};
+    }
+}
+dummy[0] = new Dummy();
+
+function bossClenup(){
+    for(var i = 0; i < bossParts.length; i++){
+        if(bossParts[i]._killed){
+            bossParts.splice([i],1);
         }
     }
 }
