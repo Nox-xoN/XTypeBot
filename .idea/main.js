@@ -31,7 +31,7 @@ class Draw {
             canContext.beginPath();
             canContext.rect(lHitboxes[i].x, lHitboxes[i].y, lHitboxes[i].width, lHitboxes[i].height);
             canContext.font = "11px Arial";
-            canContext.fillText([i], lHitboxes[i].x + 20, lHitboxes[i].y  +9);
+            canContext.fillText((Maths.distanceTo(projectiles[i]).toFixed(1) ), lHitboxes[i].x + 20, lHitboxes[i].y  +9);
             canContext.stroke();
         }
 
