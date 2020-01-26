@@ -157,15 +157,12 @@ class Player {
 }
 
 function aimbot() {
-    // if(Maths.getClosest().image.path == ["media/sprites/bullet.png"] && ig.game.player.distanceTo(Maths.getClosest()) < 50){
-    for(var i = 0; i < bossParts.length; i++){
-        if(Maths.distanceTo(bossParts[i]) < Maths.distanceTo(bossParts[0])){
-            ig.input.mouse.x = bossParts[i].pos.x + (bossParts[i].size.x /2);
-            ig.input.mouse.y = bossParts[i].pos.y + (bossParts[i].size.y /2);
-        } else {
-            ig.input.mouse.x = bossParts[0].pos.x + (bossParts[0].size.x /2);
-            ig.input.mouse.y = bossParts[0].pos.y + (bossParts[0].size.y /2);
-        }
+    if(Maths.getClosestProjectile().image.path == ["media/sprites/bullet.png"] && Maths.distanceTo(Maths.getClosestProjectile()) < 50){
+        ig.input.mouse.x = Maths.getClosestProjectile().pos.x + (Maths.getClosestProjectile().size.x /2);
+        ig.input.mouse.y = Maths.getClosestProjectile().pos.y + (Maths.getClosestProjectile().size.y /2);
+    } else {
+        ig.input.mouse.x = Maths.getClosestBossPart().pos.x + (Maths.getClosestBossPart().size.x /2);
+        ig.input.mouse.y = Maths.getClosestBossPart().pos.y + (Maths.getClosestBossPart().size.y /2);
     }
 }
 
